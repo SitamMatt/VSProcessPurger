@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -47,8 +48,9 @@ namespace ProcessPurger
                     {
                         // switch mainthread
 
-                        Process debuggedProcess = dte.Debugger.DebuggedProcesses.Cast<Process>().First();
-                        if (System.Diagnostics.Process.GetProcessById(debuggedProcess.ProcessID).GetParent().ProcessName.Contains("VsDebugConsole"))
+                        Process debuggedProcess = dte.Debugger.DebuggedProcesses.Cast<Process>().FirstOrDefault(proc => System.Diagnostics.Process.GetProcessById(proc.ProcessID).GetParent().ProcessName.Contains("VsDebugConsole"));
+                        //if (System.Diagnostics.Process.GetProcessById(debuggedProcess.ProcessID).GetParent().ProcessName.Contains("VsDebugConsole"))
+                        if (debuggedProcess != null)
                         {
                             DebuggedProcessId = debuggedProcess.ProcessID;
                             processMonitor = new ProcessMonitor(DebuggedProcessId);
@@ -58,7 +60,8 @@ namespace ProcessPurger
                     break;
 
                 case DBGMODE.DBGMODE_Design:
-                    if (DebuggedProcessId != 0)
+                    Process debuggedProcesses = dte.Debugger.DebuggedProcesses.Cast<Process>().FirstOrDefault(process => process.ProcessID == DebuggedProcessId);
+                    if (DebuggedProcessId != 0 && debuggedProcesses is null)
                     {
                         processMonitor.StopWatch();
                         processMonitor.KillChildProcesses();
